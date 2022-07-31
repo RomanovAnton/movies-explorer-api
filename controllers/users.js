@@ -18,7 +18,7 @@ module.exports.createUser = (req, res, next) => {
   });
 };
 
-module.exports.getProfileData = (req, res) => {
+module.exports.getProfileData = (req, res, next) => {
   User.findById(req.user._id)
     .orFail(() => {
       throw new NotFoundError('Пользователь не найден');
@@ -29,11 +29,10 @@ module.exports.getProfileData = (req, res) => {
         name: user.name,
       });
     })
-    .catch((err) => res.send({ message: err.message }));
+    .catch((err) => next(err));
 };
-// допиши next когда будет централизованная обработка ошибок
 
-module.exports.updateProfileData = (req, res) => {
+module.exports.updateProfileData = (req, res, next) => {
   const { email, name } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
@@ -46,8 +45,5 @@ module.exports.updateProfileData = (req, res) => {
     .then((user) => {
       res.status(201).send({ email: user.email, name: user.name });
     })
-    .catch((err) => {
-      res.send({ message: err.message });
-    });
+    .catch((err) => next(err));
 };
-// допиши next когда будет централизованная обработка ошибок

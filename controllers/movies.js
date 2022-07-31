@@ -1,16 +1,16 @@
 const Movie = require('../models/movie');
+const NotFoundError = require('../utils/errors/not-found-error');
+const ForbiddenError = require('../utils/errors/forbidden-error');
 
-module.exports.getFilms = (req, res) => {
+module.exports.getMovies = (req, res, next) => {
   Movie.find({})
-    .then((films) => {
-      res.status(200).send({ films });
+    .then((movies) => {
+      res.status(200).send(movies);
     })
-    .catch((err) => {
-      res.status(404).send({ err: err.message });
-    });
+    .catch((err) => next(err));
 };
 
-module.exports.createFilm = (req, res) => {
+module.exports.createMovie = (req, res, next) => {
   const owner = req.user._id;
   const {
     country,
@@ -40,20 +40,32 @@ module.exports.createFilm = (req, res) => {
     nameEN,
     owner,
   })
-    .then((film) => {
-      res.status(200).send({ film });
+    .then((movie) => {
+      res.status(201).send(movie);
     })
-    .catch((err) => {
-      res.status(404).send({ err: err.message });
-    });
+    .catch((err) => next(err));
 };
 
-module.exports.deleteFilm = (req, res) => {
-  Movie.findByIdAndRemove(req.params.movieId)
-    .then(() => {
-      res.send({ message: 'успешно удален' });
+module.exports.deleteMovie = (req, res, next) => {
+  Movie.findById(req.params.movieId)
+    .orFail(() => {
+      throw new NotFoundError('Фильм с указанным id не найден');
     })
-    .catch((err) => {
-      res.send({ message: err.message });
+    .then((movie) => {
+      if (`${movie.owner}` !== req.user._id) {
+        throw new ForbiddenError(
+          'Недостаточно прав для удаления чужого фильма',
+        );
+      }
+    })
+    .then(() => {
+      Movie.findByIdAndRemove(req.params.movieId)
+        .orFail(() => {
+          throw new NotFoundError('Фильм с указанным id не найден');
+        })
+        .then(() => {
+          res.send({ message: 'фильм успешно удален' });
+        })
+        .catch((err) => next(err));
     });
 };
