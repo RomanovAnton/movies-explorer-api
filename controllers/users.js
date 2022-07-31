@@ -1,22 +1,48 @@
+const bcrypt = require('bcrypt');
 const User = require('../models/user');
+const NotFoundError = require('../utils/errors/not-found-error');
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const { name, email, password } = req.body;
-  User.create({
-    name,
-    email,
-    password,
-  })
-    .then((user) => {
-      res.status(201).send(user);
+  bcrypt.hash(password, 10).then((hash) => {
+    User.create({
+      name,
+      email,
+      password: hash,
     })
-    .catch((err) => {
-      res.send({ message: err.message });
-    });
+      .then((user) => res.status(201).send({
+        name: user.name,
+        email: user.email,
+      }))
+      .catch((err) => next(err));
+  });
 };
 
 module.exports.getProfileData = (req, res) => {
   User.findById(req.user._id)
+    .orFail(() => {
+      throw new NotFoundError('Пользователь не найден');
+    })
+    .then((user) => {
+      res.status(200).send({
+        email: user.email,
+        name: user.name,
+      });
+    })
+    .catch((err) => res.send({ message: err.message }));
+};
+// допиши next когда будет централизованная обработка ошибок
+
+module.exports.updateProfileData = (req, res) => {
+  const { email, name } = req.body;
+  User.findByIdAndUpdate(
+    req.user._id,
+    { email, name },
+    { new: true, runValidators: true },
+  )
+    .orFail(() => {
+      throw new NotFoundError('Пользователь не найден');
+    })
     .then((user) => {
       res.status(201).send({ email: user.email, name: user.name });
     })
@@ -24,18 +50,4 @@ module.exports.getProfileData = (req, res) => {
       res.send({ message: err.message });
     });
 };
-
-module.exports.updateProfileData = (req, res) => {
-  const { email, name } = req.body;
-  User.findByIdAndUpdate(
-    req.user._id,
-    { name, email },
-    { new: true, runValidators: true },
-  )
-    .then((updateData) => {
-      res.status(200).send(updateData);
-    })
-    .catch((err) => {
-      res.send({ message: err.message });
-    });
-};
+// допиши next когда будет централизованная обработка ошибок
