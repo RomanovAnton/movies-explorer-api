@@ -57,8 +57,6 @@ module.exports.deleteMovie = (req, res, next) => {
           'Недостаточно прав для удаления чужого фильма',
         );
       }
-    })
-    .then(() => {
       Movie.findByIdAndRemove(req.params.movieId)
         .orFail(() => {
           throw new NotFoundError('Фильм с указанным id не найден');
@@ -67,5 +65,6 @@ module.exports.deleteMovie = (req, res, next) => {
           res.send({ message: 'фильм успешно удален' });
         })
         .catch((err) => next(err));
-    });
+    })
+    .catch((err) => next(err));
 };
