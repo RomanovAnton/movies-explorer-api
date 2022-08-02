@@ -3,8 +3,6 @@ const { COMMON_ERROR_CODE } = require('../utils/errors/error-constants');
 const conflictError = require('../utils/errors/conflict-error');
 
 module.exports = (err, req, res, next) => {
-  console.log(err.message);
-
   if (err.name === 'ValidationError' || err.name === 'CastError') {
     res
       .status(validationError.statusCode)
