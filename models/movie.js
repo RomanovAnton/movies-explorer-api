@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { regExpUrl } = require('../utils/regexp/regExpUrl');
+const validator = require('validator');
 const User = require('./user');
 
 const movieSchema = new mongoose.Schema({
@@ -27,21 +27,21 @@ const movieSchema = new mongoose.Schema({
     required: true,
     type: String,
     validate: {
-      validator: (v) => regExpUrl.test(v),
+      validator: (v) => validator.isURL(v),
     },
   },
   trailerLink: {
     required: true,
     type: String,
     validate: {
-      validator: (v) => regExpUrl.test(v),
+      validator: (v) => validator.isURL(v),
     },
   },
   thumbnail: {
     required: true,
     type: String,
     validate: {
-      validator: (v) => regExpUrl.test(v),
+      validator: (v) => validator.isURL(v),
     },
   },
   owner: {

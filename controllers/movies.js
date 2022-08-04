@@ -3,7 +3,7 @@ const NotFoundError = require('../utils/errors/not-found-error');
 const ForbiddenError = require('../utils/errors/forbidden-error');
 
 module.exports.getMovies = (req, res, next) => {
-  Movie.find({})
+  Movie.find({ owner: req.user._id })
     .then((movies) => {
       res.status(200).send(movies);
     })
@@ -47,7 +47,7 @@ module.exports.createMovie = (req, res, next) => {
 };
 
 module.exports.deleteMovie = (req, res, next) => {
-  Movie.findById(req.params.movieId)
+  Movie.findById(req.params._id)
     .orFail(() => {
       throw new NotFoundError('Фильм с указанным id не найден');
     })
@@ -57,7 +57,7 @@ module.exports.deleteMovie = (req, res, next) => {
           'Недостаточно прав для удаления чужого фильма',
         );
       }
-      Movie.findByIdAndRemove(req.params.movieId)
+      Movie.findByIdAndRemove(req.params._id)
         .orFail(() => {
           throw new NotFoundError('Фильм с указанным id не найден');
         })
