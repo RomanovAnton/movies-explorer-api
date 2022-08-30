@@ -1,6 +1,6 @@
 const allowedCors = [
-  'https://mesto-rmv.nomorepartiesxyz.ru',
-  'http://mesto-rmv.nomorepartiesxyz.ru',
+  'https://movies.rmv.nomoredomains.sbs',
+  'http://movies.rmv.nomoredomains.sbs',
   'localhost:3000',
   'http://localhost:3000',
 ];
